@@ -3,6 +3,7 @@
 Coderr Backend is a RESTful API built with **Django** and **Django REST Framework (DRF)**. It serves as the backend for the Coderr project.
 
 This repository is intended to work alongside the [Coderr Frontend](https://github.com/mahapiri/coderr_frontend), providing all required backend functionality.
+Version: V1.2.0
 
 ---
 
