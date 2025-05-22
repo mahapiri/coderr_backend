@@ -1,3 +1,4 @@
+from datetime import date
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -7,10 +8,11 @@ TYPE_CHOICES = (
 )
 
 class Profile(models.Model):
-    #pk, username, first_name, last_name, email, created_at
+    #pk, username, first_name, last_name, email
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="profiles")
     file = models.FileField(upload_to="static/img/profile-img/", max_length=255, blank=True)
     # uploaded_at = models.CharField(max_length=255)
+    created_at = models.DateField(auto_now_add=True, null=True)
     location = models.CharField(max_length=255)
     tel = models.CharField(max_length=255)
     description = models.CharField(max_length=255)

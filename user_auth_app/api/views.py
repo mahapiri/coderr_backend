@@ -4,10 +4,11 @@ from django.contrib.auth.models import User
 from rest_framework import generics, status
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 
-from user_auth_app.api.serializers import LoginSerializer, ProfilResponseSerializer, ProfilRegistrationSerializer
+from user_auth_app.api.serializers import LoginSerializer, ProfilResponseSerializer, ProfilRegistrationSerializer, ProfileSerializer
 from user_auth_app.models import Profile
 
 
@@ -101,3 +102,8 @@ class ProfilLoginView(generics.GenericAPIView):
             "email": user.email,
             "user_id": profile.id
         }
+    
+class ProfileViewSet(ModelViewSet):
+    serializer_class = ProfileSerializer
+    queryset = Profile.objects.all()
+    permission_classes = [IsAuthenticated]
