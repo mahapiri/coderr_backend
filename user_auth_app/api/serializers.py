@@ -44,6 +44,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
     first_name = serializers.SerializerMethodField()
     last_name = serializers.SerializerMethodField()
+    file = serializers.SerializerMethodField()
     email = serializers.SerializerMethodField()
     created_at = serializers.SerializerMethodField()
 
@@ -79,6 +80,10 @@ class ProfileSerializer(serializers.ModelSerializer):
         if obj.user:
             return obj.user.last_name
         return None
+    
+    def get_file(self, obj):
+        if obj.file:
+            return obj.file.file
 
     def get_email(self, obj):
         if obj.user:
@@ -89,4 +94,93 @@ class ProfileSerializer(serializers.ModelSerializer):
         if obj.created_at:
             formatted_date = obj.created_at.strftime("%Y-%m-%dT%H:%M:%S")
             return formatted_date
+        return None
+    
+
+class BusinessSerializer(serializers.ModelSerializer):
+    username = serializers.SerializerMethodField()
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+    file = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Profile
+        verbose_name = ["Profile"]
+        verbose_name_plural = ["Profiles"]
+        fields = [
+            "user",
+            "username",
+            "first_name",
+            "last_name",
+            "file",
+            "location",
+            "tel",
+            "description",
+            "working_hours",
+            "type"]
+
+    def get_username(self, obj):
+        if obj.user:
+            return obj.user.username
+        return None
+
+    def get_first_name(self, obj):
+        if obj.user:
+            return obj.user.first_name
+        return None
+
+    def get_last_name(self, obj):
+        if obj.user:
+            return obj.user.last_name
+        return None
+    
+    def get_file(self, obj):
+        if obj.file:
+            return obj.file
+        return None
+    
+
+class CustomerSerializer(serializers.ModelSerializer):
+    username = serializers.SerializerMethodField()
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+    file = serializers.SerializerMethodField()
+    uploaded_at = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Profile
+        verbose_name = ["Profile"]
+        verbose_name_plural = ["Profiles"]
+        fields = [
+            "user",
+            "username",
+            "first_name",
+            "last_name",
+            "file",
+            "uploaded_at",
+            "type"]
+
+    def get_username(self, obj):
+        if obj.user:
+            return obj.user.username
+        return None
+
+    def get_first_name(self, obj):
+        if obj.user:
+            return obj.user.first_name
+        return None
+
+    def get_last_name(self, obj):
+        if obj.user:
+            return obj.user.last_name
+        return None
+    
+    def get_file(self, obj):
+        if obj.file:
+            return obj.file
+        return None
+    
+    def get_uploaded_at(self, obj):
+        if obj.file:
+            return obj.file.uploaded_at
         return None

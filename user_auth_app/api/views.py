@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.migrations import serializer
 from django.http import Http404
 
 from rest_framework import generics, status
@@ -11,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from user_auth_app.api.permissions import ProfileOwnerPermissions
-from user_auth_app.api.serializers import LoginSerializer, ProfilResponseSerializer, ProfilRegistrationSerializer, ProfileSerializer
+from user_auth_app.api.serializers import BusinessSerializer, CustomerSerializer, LoginSerializer, ProfilResponseSerializer, ProfilRegistrationSerializer, ProfileSerializer
 from user_auth_app.models import Profile
 
 
@@ -149,3 +150,31 @@ class ProfileViewSet(ModelViewSet):
             return Response({"error": "Forbidden. You should be the owner of this profile!"}, status=status.HTTP_403_FORBIDDEN)
         except Exception as e:
             return Response({"error": "Internal Server error!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class BusinessListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = BusinessSerializer
+    queryset = Profile.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        try:
+            data = Profile.objects.filter(type="business")
+            serializer = self.get_serializer(data, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": "Internal Server error!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class CustomerListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CustomerSerializer
+    queryset = Profile.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        try:
+            data = Profile.objects.filter(type="customer")
+            serializer = self.get_serializer(data, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": "Internal Server error!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

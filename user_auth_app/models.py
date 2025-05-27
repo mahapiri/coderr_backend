@@ -7,17 +7,19 @@ TYPE_CHOICES = (
     ("customer", "Customer")
 )
 
+class ProfileFile(models.Model):
+    file = models.FileField(upload_to="profile-img/", max_length=255, blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
 class Profile(models.Model):
-    #pk, username, first_name, last_name, email
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="profiles")
-    file = models.FileField(upload_to="static/img/profile-img/", max_length=255, blank=True)
-    # uploaded_at = models.CharField(max_length=255)
     created_at = models.DateTimeField(default=timezone.now)
     location = models.CharField(max_length=255)
     tel = models.CharField(max_length=255)
     description = models.CharField(max_length=255)
     working_hours = models.CharField(max_length=255)
     type = models.CharField(max_length=255, choices=TYPE_CHOICES)
+    file = models.ForeignKey(ProfileFile, on_delete=models.CASCADE, null=True, blank=True, related_name="profiles")
     
     
     class Meta:
@@ -27,3 +29,4 @@ class Profile(models.Model):
     
     def __str__(self):
         return self.user.username
+    
