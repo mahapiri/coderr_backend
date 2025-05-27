@@ -45,6 +45,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     first_name = serializers.SerializerMethodField()
     last_name = serializers.SerializerMethodField()
     email = serializers.SerializerMethodField()
+    created_at = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
@@ -82,4 +83,10 @@ class ProfileSerializer(serializers.ModelSerializer):
     def get_email(self, obj):
         if obj.user:
             return obj.user.email
+        return None
+    
+    def get_created_at(self, obj):
+        if obj.created_at:
+            formatted_date = obj.created_at.strftime("%Y-%m-%dT%H:%M:%S")
+            return formatted_date
         return None
