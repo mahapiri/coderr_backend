@@ -11,6 +11,14 @@ class ProfileFile(models.Model):
     file = models.FileField(upload_to="profile-img/", max_length=255, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        verbose_name = "File"
+        verbose_name_plural = "Files"
+        ordering = ["file"]
+    
+    def __str__(self):
+        return self.file
+    
 class Profile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="profiles")
     created_at = models.DateTimeField(default=timezone.now)
