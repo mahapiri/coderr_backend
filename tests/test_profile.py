@@ -75,3 +75,40 @@ class TestUpdateProfile(APITestCase):
         self.profile = Profile.objects.update(location="Berlin", tel="07954223", description="Test Description", working_hours="9-12")
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+class TestBusinessProfile(APITestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="exampleUsername", email="example@test.de", password="Hallo123@")
+        self.profile = Profile.objects.create(type="business", user=self.user)
+        self.token, created = Token.objects.get_or_create(user=self.user)
+
+    def test_get_business(self):
+        url = reverse("business_profiles")
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_business_profil_not_authorized(self):
+        url = reverse("business_profiles")
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+class TestCustomerProfile(APITestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="exampleUsername", email="example@test.de", password="Hallo123@")
+        self.profile = Profile.objects.create(type="business", user=self.user)
+        self.token, created = Token.objects.get_or_create(user=self.user)
+
+    def test_get_business(self):
+        url = reverse("customer_profiles")
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_business_profil_not_authorized(self):
+        url = reverse("business_profiles")
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
