@@ -23,6 +23,7 @@ urlpatterns = [
     path("api-auth/", include("rest_framework.urls")),
     path("api/", include("user_auth_app.api.urls")),
     path("api/", include("offer_app.api.urls")),
+    path("api/", include("order_app.api.urls")),
 
     re_path(r"favicon\.ico$", RedirectView.as_view(url="/static/favicon.png", permanent=True)),
 
