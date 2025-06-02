@@ -18,6 +18,9 @@ from django.contrib import admin
 from django.urls import include, path, re_path
 from django.views.generic import RedirectView
 
+from core.api.views import BaseInfoViewSet
+
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api-auth/", include("rest_framework.urls")),
@@ -25,6 +28,7 @@ urlpatterns = [
     path("api/", include("offer_app.api.urls")),
     path("api/", include("order_app.api.urls")),
     path("api/", include("review_app.api.urls")),
+    path("api/base-info/", BaseInfoViewSet.as_view(), name="base-info"),
 
     re_path(r"favicon\.ico$", RedirectView.as_view(url="/static/favicon.png", permanent=True)),
 
