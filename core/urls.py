@@ -29,7 +29,6 @@ urlpatterns = [
     path("api/", include("order_app.api.urls")),
     path("api/", include("review_app.api.urls")),
     path("api/base-info/", BaseInfoViewSet.as_view(), name="base-info"),
-
-    re_path(r"favicon\.ico$", RedirectView.as_view(url="/static/favicon.png", permanent=True)),
-
+    re_path(r"favicon\.ico$", RedirectView.as_view(
+        url="/static/favicon.png", permanent=True)),
 ]

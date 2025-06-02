@@ -4,10 +4,10 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.api.serializers import BaseInfoSerializer
-from offer_app.admin import Offer
-from review_app.models import Review
+from offer_app.models import Offer
 from user_auth_app.models import Profile
+from review_app.models import Review
+from core.api.serializers import BaseInfoSerializer
 
 
 class BaseInfoViewSet(APIView):
