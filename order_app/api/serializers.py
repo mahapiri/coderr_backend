@@ -30,8 +30,10 @@ class OrderSerializer(serializers.ModelSerializer):
             "updated_at"
         ]
 
+
 class OrderCountSerializer(serializers.Serializer):
     order_count = serializers.IntegerField()
+
 
 class CompletedOrderSerializer(serializers.Serializer):
     completed_order_count = serializers.IntegerField()

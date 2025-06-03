@@ -3,11 +3,14 @@ from django.db import models
 from offer_app.models import Offer, OfferDetail
 from user_auth_app.models import Profile
 
+
 STATUS_CHOICE = {
     "in_progress": "In Progress",
     "completed": "Completed",
     "cancelled": "Cancelled"
 }
+
+
 class Order(models.Model):
     customer_user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="orders_as_customer")
     business_user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="orders_as_business")
