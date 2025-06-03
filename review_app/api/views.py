@@ -1,3 +1,4 @@
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied, ValidationError
 from rest_framework.permissions import IsAuthenticated
@@ -27,6 +28,30 @@ class ReviewViewSet(ModelViewSet):
             permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]
 
+    @extend_schema(
+        summary="List all reviews",
+        description="Returns a list of all reviews. You can filter by business_user_id, reviewer_id or order by updated_at/rating.",
+        tags=["Review"],
+        responses={
+            200: ReviewSerializer(many=True),
+        }
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
+    @extend_schema(
+        summary="Create a new review",
+        description="Creates a new review for a specific business user by a customer. Only one review per customer/business pair is allowed.",
+        tags=["Review"],
+        responses={
+            201: ReviewSerializer,
+            400: OpenApiResponse(description="Invalid request data!"),
+            401: OpenApiResponse(description="Unauthorized. You must be authenticated and have a customer profile."),
+            403: OpenApiResponse(description="Forbidden. You have already an existing review"),
+            404: OpenApiResponse(description="Business profile was not found"),
+            500: OpenApiResponse(description="An internal server error occurred!"),
+        }
+    )
     def create(self, request, *args, **kwargs):
         data = request.data
         business_user_id = data.get("business_user")
@@ -52,6 +77,16 @@ class ReviewViewSet(ModelViewSet):
         except Exception:
             return Response({"details": "An internal server error occurred!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    @extend_schema(
+        summary="Update a review",
+        description="Partially updates an existing review (rating and description). Only the review owner can update.",
+        tags=["Review"],
+        responses={
+            200: ReviewSerializer,
+            400: OpenApiResponse(description="Invalid request data!"),
+            500: OpenApiResponse(description="An internal server error occurred!"),
+        }
+    )
     def partial_update(self, request, *args, **kwargs):
         review = self.get_object()
         rating = request.data.get("rating")
@@ -68,6 +103,15 @@ class ReviewViewSet(ModelViewSet):
         except Exception:
             return Response({"details": "An internal server error occurred!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    @extend_schema(
+        summary="Delete a review",
+        description="Deletes a review. Only the review owner can delete.",
+        tags=["Review"],
+        responses={
+            204: OpenApiResponse(description="Review deleted"),
+            500: OpenApiResponse(description="An internal server error occurred!"),
+        }
+    )
     def destroy(self, request, *args, **kwargs):
         try:
             review = self.get_object()

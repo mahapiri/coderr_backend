@@ -1,4 +1,5 @@
 from django.db import models
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
@@ -40,6 +41,33 @@ class OrderViewSet(ModelViewSet):
             permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]
 
+    @extend_schema(
+        summary="List orders of the current user",
+        description=(
+            "Returns all orders where the current authenticated user is either the customer or the business user. "
+            "Admins see all orders."
+        ),
+        tags=["Order"],
+        responses={200: OrderSerializer(many=True)}
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Create a new order",
+        description=(
+            "Creates a new order for the authenticated customer. "
+            "Requires a valid offer_detail_id in the request data."
+        ),
+        tags=["Order"],
+        responses={
+            201: OrderSerializer,
+            400: OpenApiResponse(description="Missing or invalid offer_detail_id"),
+            401: OpenApiResponse(description="Profile was not found."),
+            404: OpenApiResponse(description="Offer not found."),
+            500: OpenApiResponse(description="Internal server error")
+        }
+    )
     def create(self, request, *args, **kwargs):
         user = request.user
         try:
@@ -64,6 +92,20 @@ class OrderViewSet(ModelViewSet):
         except Exception:
             return Response({"details": "An Internal server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    @extend_schema(
+        summary="Partially update an order's status",
+        description=(
+            "Updates the status of an order. Only the business user of the order is allowed to update. "
+            "Status must be one of the valid choices."
+        ),
+        tags=["Order"],
+        responses={
+            200: OrderSerializer,
+            400: OpenApiResponse(description="Invalid request data"),
+            403: OpenApiResponse(description="You have no permission"),
+            500: OpenApiResponse(description="Internal server error")
+        }
+    )
     def partial_update(self, request, *args, **kwargs):
         user = request.user
         try:
@@ -86,6 +128,16 @@ class OrderViewSet(ModelViewSet):
         except ValidationError:
             return Response({"details": "Invalid request data"}, status=status.HTTP_400_BAD_REQUEST)
 
+    @extend_schema(
+        summary="Delete an order",
+        description="Deletes an order. Only admins are allowed to delete orders.",
+        tags=["Order"],
+        responses={
+            204: OpenApiResponse(description="Order deleted"),
+            404: OpenApiResponse(description="Order not found!"),
+            500: OpenApiResponse(description="Internal server error")
+        }
+    )
     def destroy(self, request, *args, **kwargs):
         try:
             order = self.get_object()
@@ -100,6 +152,27 @@ class OrderViewSet(ModelViewSet):
 class OrderCountView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        summary="Get count of in-progress orders for a business user",
+        description=(
+            "Returns the number of orders with status 'in_progress' for the specified business user."
+        ),
+        tags=["Order"],
+        parameters=[
+            OpenApiParameter(
+                name="business_user_id",
+                description="Primary key of the business user profile",
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH,
+            ),
+        ],
+        responses={
+            200: OrderCountSerializer,
+            404: OpenApiResponse(description="No business user was found!"),
+            500: OpenApiResponse(description="Internal server error")
+        }
+    )
     def get(self, request, business_user_id):
         try:
             profile = Profile.objects.get(pk=business_user_id, type="business")
@@ -115,6 +188,27 @@ class OrderCountView(APIView):
 class CompletedOrderView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        summary="Get count of completed orders for a business user",
+        description=(
+            "Returns the number of orders with status 'completed' for the specified business user."
+        ),
+        tags=["Order"],
+        parameters=[
+            OpenApiParameter(
+                name="business_user_id",
+                description="Primary key of the business user profile",
+                required=True,
+                type=int,
+                location=OpenApiParameter.PATH,
+            ),
+        ],
+        responses={
+            200: CompletedOrderSerializer,
+            404: OpenApiResponse(description="No business user was found!"),
+            500: OpenApiResponse(description="Internal server error")
+        }
+    )
     def get(self, request, business_user_id):
         try:
             profile = Profile.objects.get(pk=business_user_id, type="business")

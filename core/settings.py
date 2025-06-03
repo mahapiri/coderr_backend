@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
+    'drf_spectacular',
     'user_auth_app',
     'offer_app',
     'order_app',
@@ -155,4 +156,23 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Coderr API',
+    'DESCRIPTION': 'Coderr Backend is a RESTful API built with Django and Django REST Framework (DRF)',
+    'VERSION': '1.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    
+    'TAGS': [
+        {'name': 'Offer', 'description': 'Offer Management Endpoints'},
+        {'name': 'Order', 'description': 'Order Management Endpoints'},
+        {'name': 'Review', 'description': 'Review Management Endpoints'},
+        {'name': 'BaseInfo', 'description': 'BaseInfo Endpoint'},
+        {'name': 'Authentication', 'description': 'Authentication and User Management'},
+    ],
+    
+    'COMPONENT_SPLIT_REQUEST': True,
+    'COMPONENT_NO_READ_ONLY_REQUIRED': False,
 }

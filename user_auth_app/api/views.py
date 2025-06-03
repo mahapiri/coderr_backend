@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import generics, status
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
@@ -19,6 +20,16 @@ class ProfilRegistrationView(generics.CreateAPIView):
     serializer_class = ProfilRegistrationSerializer
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        summary="Register a new user profile",
+        description="Creates a new user and profile. Returns an authentication token and basic user info.",
+        tags=["Authentication"],
+        responses={
+            201: ProfilResponseSerializer,
+            400: OpenApiResponse(description="Invalid request data"),
+            500: OpenApiResponse(description="An internal server error occurred!"),
+        }
+    )
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         try:
@@ -75,6 +86,16 @@ class ProfilLoginView(generics.GenericAPIView):
     serializer_class = LoginSerializer
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        summary="Login and obtain token",
+        description="Authenticates a user and returns an authentication token along with user info.",
+        tags=["Authentication"],
+        responses={
+            200: ProfilResponseSerializer,
+            400: OpenApiResponse(description="Invalid email or password"),
+            500: OpenApiResponse(description="An internal server error occurred!"),
+        }
+    )
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -124,7 +145,30 @@ class ProfileViewSet(ModelViewSet):
             return obj
         except (ObjectDoesNotExist, Http404):
             raise NotFound("Profile was not found!")
-    
+
+    @extend_schema(
+        summary="Retrieve a profile",
+        description="Returns the profile for a given user ID.",
+        tags=["Profile"],
+        responses={
+            200: ProfileSerializer,
+            404: OpenApiResponse(description="Profile was not found!"),
+        }
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Update a profile",
+        description="Updates profile data. Only the profile owner can update.",
+        tags=["Profile"],
+        responses={
+            200: ProfileSerializer,
+            403: OpenApiResponse(description="Forbidden. You should be the owner of this profile!"),
+            404: OpenApiResponse(description="Profile was not found!"),
+            500: OpenApiResponse(description="An Internal server error occured!"),
+        }
+    )
     def update(self, request, *args, **kwargs):
         try:
             partial = kwargs.get("partial", False)
@@ -160,6 +204,15 @@ class BusinessListView(generics.ListAPIView):
     serializer_class = BusinessSerializer
     queryset = Profile.objects.all()
 
+    @extend_schema(
+        summary="List all business profiles",
+        description="Returns a list of all profiles with type 'business'.",
+        tags=["Profile"],
+        responses={
+            200: BusinessSerializer(many=True),
+            500: OpenApiResponse(description="Internal Server error occured!"),
+        }
+    )
     def get(self, request, *args, **kwargs):
         try:
             data = Profile.objects.filter(type="business")
@@ -174,6 +227,15 @@ class CustomerListView(generics.ListAPIView):
     serializer_class = CustomerSerializer
     queryset = Profile.objects.all()
 
+    @extend_schema(
+        summary="List all customer profiles",
+        description="Returns a list of all profiles with type 'customer'.",
+        tags=["Profile"],
+        responses={
+            200: CustomerSerializer(many=True),
+            500: OpenApiResponse(description="Internal Server error!"),
+        }
+    )
     def get(self, request, *args, **kwargs):
         try:
             data = Profile.objects.filter(type="customer")

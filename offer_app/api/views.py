@@ -1,3 +1,4 @@
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import filters, status
 from rest_framework.exceptions import APIException, NotFound, PermissionDenied, ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -59,6 +60,41 @@ class OfferViewSet(ModelViewSet):
         queryset = self.get_params_to_filter(params, queryset)
         return queryset
 
+    @extend_schema(
+        summary="List all offers",
+        description="Returns a paginated list of all offers. You can filter offers by creator, minimum price, maximum delivery time, or search in title/description.",
+        tags=["Offer"],
+        responses={
+            200: OfferSerializer(many=True),
+            400: OpenApiResponse(description="At least one valid request parameter must be passed."),
+        }
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Retrieve offer details",
+        description="Returns the details of a single offer by its ID.",
+        tags=["Offer"],
+        responses={
+            200: OfferRetrieveSerializer,
+            404: OpenApiResponse(description="Offer not found."),
+        }
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Create a new offer",
+        description="Creates a new offer with exactly three details. Only business profiles can create offers.",
+        tags=["Offer"],
+        responses={
+            201: OfferResponseSerializer,
+            400: OpenApiResponse(description="An offer should have exactly 3 details!"),
+            403: OpenApiResponse(description="Only Business Profile can create an offer!"),
+            500: OpenApiResponse(description="Internal Server Error"),
+        }
+    )
     def create(self, request, *args, **kwargs):
         data = request.data
         try:
@@ -74,6 +110,16 @@ class OfferViewSet(ModelViewSet):
         except Exception:
             return Response({"details": "An Internal server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    @extend_schema(
+        summary="Partially update an offer",
+        description="Partially updates an offer and its details. Only the offer owner can update.",
+        tags=["Offer"],
+        responses={
+            200: OfferUpdatedResponseSerializer,
+            400: OpenApiResponse(description="Invalid or incomplete details data."),
+            404: OpenApiResponse(description="Detail was not found."),
+        }
+    )
     def partial_update(self, request, *args, **kwargs):
         offer = self.get_object()
         data = request.data
@@ -91,7 +137,16 @@ class OfferViewSet(ModelViewSet):
             return Response({"details": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except NotFound:
             return Response({"details": "detail was not found"}, status=status.HTTP_400_BAD_REQUEST)
-   
+
+    @extend_schema(
+        summary="Delete an offer",
+        description="Deletes an offer. Only the offer owner can delete.",
+        tags=["Offer"],
+        responses={
+            204: OpenApiResponse(description="Offer successfully deleted."),
+            500: OpenApiResponse(description="Internal Server error occurred!"),
+        }
+    )
     def destroy(self, request, *args, **kwargs):
         try:
             offer = self.get_object()
@@ -99,7 +154,7 @@ class OfferViewSet(ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception:
             return Response({"details": "Internal Server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
     def update_offer_fields(self, offer, data):
         for field, value in data.items():
             if value is not None:
@@ -213,3 +268,26 @@ class OfferDetailView(ReadOnlyModelViewSet):
     queryset = OfferDetail.objects.all()
     serializer_class = OfferDetailResponseSerializer
     permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="List all offer details",
+        description="Returns a list of all offer details.",
+        tags=["Offer"],
+        responses={
+            200: OfferDetailResponseSerializer(many=True)
+        }
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Retrieve offer detail",
+        description="Returns the details of a single offer detail by its ID.",
+        tags=["Offer"],
+        responses={
+            200: OfferDetailResponseSerializer,
+            404: OpenApiResponse(description="Offer detail not found."),
+        }
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
