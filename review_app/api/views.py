@@ -17,15 +17,7 @@ class ReviewViewSet(ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         params = self.request.query_params
-        business_user_id = params.get("business_user_id")
-        reviewer_id = params.get("reviewer_id")
-        ordering = params.get("ordering")
-        if business_user_id:
-            queryset = queryset.filter(business_user__id=business_user_id)
-        if reviewer_id:
-            queryset = queryset.filter(reviewer__id=reviewer_id)
-        if ordering in ["updated_at", "rating"]:
-            queryset = queryset.order_by(ordering)
+        queryset = self.get_filter_params(queryset, params)
         return queryset
 
     def get_permissions(self):
@@ -56,7 +48,7 @@ class ReviewViewSet(ModelViewSet):
         except PermissionDenied:
             return Response({"error": "Forbidden. You have already an existing review"}, status=status.HTTP_403_FORBIDDEN)
         except NotAuthenticated:
-            return Response({"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"error": "Unauthorized. You must be authenticated and have a customer profile."}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception:
             return Response({"error": "An internal server error occurred!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -71,13 +63,30 @@ class ReviewViewSet(ModelViewSet):
             review.save()
             serializer = self.get_serializer(review)
             return Response(serializer.data, status=status.HTTP_200_OK)
+        except ValidationError:
+            return Response({"error": "Invalid request data!"}, status=status.HTTP_400_BAD_REQUEST)
         except Exception:
             return Response({"error": "An internal server error occurred!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def destroy(self, request, *args, **kwargs):
-        review = self.get_object()
-        self.perform_destroy(review)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        try:
+            review = self.get_object()
+            self.perform_destroy(review)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception:
+            return Response({"error": "An internal server error occurred!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def get_filter_params(self, queryset, params):
+        business_user_id = params.get("business_user_id")
+        reviewer_id = params.get("reviewer_id")
+        ordering = params.get("ordering")
+        if business_user_id:
+            queryset = queryset.filter(business_user__id=business_user_id)
+        if reviewer_id:
+            queryset = queryset.filter(reviewer__id=reviewer_id)
+        if ordering in ["updated_at", "rating", "-updated_at", "-rating"]:
+            queryset = queryset.order_by(ordering)
+        return queryset
 
     def is_create_data_valid(self, business_user_id, description, rating):
         if business_user_id is None or description is None or rating is None:
