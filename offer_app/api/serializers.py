@@ -58,6 +58,7 @@ class OfferDetailResponseSerializer(serializers.ModelSerializer):
     def get_features(self, obj):
         return [f.title for f in obj.features.all()]
     
+
 class OfferCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offer
@@ -98,3 +99,15 @@ class OfferUpdatedResponseSerializer(serializers.ModelSerializer):
         fields = (
             "id", "title", "image", "description", "details",
         )
+
+class OfferRetrieveSerializer(serializers.ModelSerializer):
+    details = OfferDetailListSerializer(many=True, read_only=True)
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = Offer
+        fields = [
+            "id", "user", "title", "image", "description",
+            "created_at", "updated_at", "details",
+            "min_price", "min_delivery_time"
+        ]
