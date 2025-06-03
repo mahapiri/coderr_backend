@@ -42,15 +42,15 @@ class ReviewViewSet(ModelViewSet):
             review = serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except Profile.DoesNotExist:
-            return Response({"error": "Business profile was not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"details": "Business profile was not found"}, status=status.HTTP_404_NOT_FOUND)
         except ValidationError:
-            return Response({"error": "Invalid request data!"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"details": "Invalid request data!"}, status=status.HTTP_400_BAD_REQUEST)
         except PermissionDenied:
-            return Response({"error": "Forbidden. You have already an existing review"}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"details": "Forbidden. You have already an existing review"}, status=status.HTTP_403_FORBIDDEN)
         except NotAuthenticated:
-            return Response({"error": "Unauthorized. You must be authenticated and have a customer profile."}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"details": "Unauthorized. You must be authenticated and have a customer profile."}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception:
-            return Response({"error": "An internal server error occurred!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"details": "An internal server error occurred!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def partial_update(self, request, *args, **kwargs):
         review = self.get_object()
@@ -64,9 +64,9 @@ class ReviewViewSet(ModelViewSet):
             serializer = self.get_serializer(review)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except ValidationError:
-            return Response({"error": "Invalid request data!"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"details": "Invalid request data!"}, status=status.HTTP_400_BAD_REQUEST)
         except Exception:
-            return Response({"error": "An internal server error occurred!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"details": "An internal server error occurred!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def destroy(self, request, *args, **kwargs):
         try:
@@ -74,7 +74,7 @@ class ReviewViewSet(ModelViewSet):
             self.perform_destroy(review)
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception:
-            return Response({"error": "An internal server error occurred!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"details": "An internal server error occurred!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def get_filter_params(self, queryset, params):
         business_user_id = params.get("business_user_id")

@@ -26,7 +26,7 @@ class OrderViewSet(ModelViewSet):
                 models.Q(customer_user=profile) | models.Q(business_user=profile)
             ).distinct()
         except Exception:
-            return Response({"error": "Internal server error occured"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"details": "An Internal server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
     def get_permissions(self):
@@ -56,13 +56,13 @@ class OrderViewSet(ModelViewSet):
             serializer = self.get_serializer(order)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except OfferDetail.DoesNotExist:
-            return Response({"error": "Offer not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"details": "Offer not found"}, status=status.HTTP_404_NOT_FOUND)
         except (TypeError, ValueError):
-            return Response({"error": "offer_detail_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"details": "offer_detail_id is required"}, status=status.HTTP_400_BAD_REQUEST)
         except Profile.DoesNotExist:
-            return Response({"error": "Profile was not found."}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"details": "Profile was not found."}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception:
-            return Response({"error": "Internal server error occured"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"details": "An Internal server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def partial_update(self, request, *args, **kwargs):
         user = request.user
@@ -80,11 +80,11 @@ class OrderViewSet(ModelViewSet):
             serializer = self.get_serializer(order)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception:
-            return Response({"error": "Internal server error occured"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"details": "An Internal server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except PermissionDenied:
-            return Response({"error": "You have no permission"}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"details": "You have no permission"}, status=status.HTTP_403_FORBIDDEN)
         except ValidationError:
-            return Response({"error": "Invalid request data"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"details": "Invalid request data"}, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, *args, **kwargs):
         try:
@@ -92,9 +92,9 @@ class OrderViewSet(ModelViewSet):
             self.perform_destroy(order)
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Order.DoesNotExist:
-            return Response({"error": "Order not found!"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"details": "Order not found!"}, status=status.HTTP_404_NOT_FOUND)
         except Exception:
-            return Response({"error": "Internal server error occured"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"details": "An Internal server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class OrderCountView(APIView):
@@ -107,9 +107,9 @@ class OrderCountView(APIView):
             serializer = OrderCountSerializer({"order_count": order_count})
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Profile.DoesNotExist:
-            return Response({"error": "No business user was found!"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"details": "No business user was found!"}, status=status.HTTP_404_NOT_FOUND)
         except Exception:
-            return Response({"error": "Internal server error occured"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"details": "An Internal server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class CompletedOrderView(APIView):
@@ -122,6 +122,6 @@ class CompletedOrderView(APIView):
             serializer = CompletedOrderSerializer({"completed_order_count": order_count})
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Profile.DoesNotExist:
-            return Response({"error": "No business user was found!"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"details": "No business user was found!"}, status=status.HTTP_404_NOT_FOUND)
         except Exception:
-            return Response({"error": "Internal server error occured"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"details": "An Internal server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

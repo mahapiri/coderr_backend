@@ -31,9 +31,9 @@ class ProfilRegistrationView(generics.CreateAPIView):
             response_serializer = ProfilResponseSerializer(response_data)
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         except ValidationError:
-            return Response({"error": "Invalid request data"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"details": "Invalid request data"}, status=status.HTTP_400_BAD_REQUEST)
         except Exception:
-            return Response({"error": "An internal server error occurred!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"details": "An internal server error occurred!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def validate_serializer(self, serializer):
         if not serializer.is_valid():
@@ -87,9 +87,9 @@ class ProfilLoginView(generics.GenericAPIView):
                 response_data = self.create_response_data(token, profile, user)
                 response_serializer = ProfilResponseSerializer(response_data)
                 return Response(response_serializer.data, status=status.HTTP_200_OK)
-            return Response({"error": "Invalid email or password"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"details": "Invalid email or password"}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({"error": f"An internal server error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"details": f"An internal server error occurred!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def authenticate_user(self, serializer):
         return authenticate(
@@ -136,11 +136,11 @@ class ProfileViewSet(ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         except NotFound:
-            return Response({"error": "Profile was not found!"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"details": "Profile was not found!"}, status=status.HTTP_404_NOT_FOUND)
         except PermissionDenied:
-            return Response({"error": "Forbidden. You should be the owner of this profile!"}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"details": "Forbidden. You should be the owner of this profile!"}, status=status.HTTP_403_FORBIDDEN)
         except Exception:
-            return Response({"error": "Internal Server error!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"details": "An Internal server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def update_fields(self, request, user):
         data = request.data.copy()
@@ -166,7 +166,7 @@ class BusinessListView(generics.ListAPIView):
             serializer = self.get_serializer(data, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception:
-            return Response({"error": "Internal Server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"details": "Internal Server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class CustomerListView(generics.ListAPIView):
@@ -180,4 +180,4 @@ class CustomerListView(generics.ListAPIView):
             serializer = self.get_serializer(data, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({"error": "Internal Server error!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"details": "Internal Server error!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

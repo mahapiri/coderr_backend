@@ -28,4 +28,4 @@ class BaseInfoViewSet(APIView):
             })
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception:
-            return Response({"error": "Internal server error occured"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"details": "An Internal server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
