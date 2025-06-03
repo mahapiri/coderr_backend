@@ -1,11 +1,11 @@
 from django.contrib.auth.models import User
+
 from rest_framework import serializers
 
 from user_auth_app.models import TYPE_CHOICES, Profile
 
 
 class ProfilRegistrationSerializer(serializers.Serializer):
-
     username = serializers.CharField(max_length=255)
     email = serializers.EmailField(max_length=255)
     password = serializers.CharField(write_only=True, min_length=8)
@@ -27,7 +27,6 @@ class ProfilRegistrationSerializer(serializers.Serializer):
 
 
 class ProfilResponseSerializer(serializers.Serializer):
-
     token = serializers.CharField()
     username = serializers.CharField()
     email = serializers.EmailField()
@@ -35,7 +34,6 @@ class ProfilResponseSerializer(serializers.Serializer):
 
 
 class LoginSerializer(serializers.Serializer):
-
     username = serializers.CharField(max_length=255)
     password = serializers.CharField(write_only=True, min_length=8)
 

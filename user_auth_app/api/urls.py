@@ -1,7 +1,9 @@
 from django.urls import path
+
 from rest_framework.routers import DefaultRouter
 
 from user_auth_app.api.views import CustomerListView, ProfilLoginView, ProfilRegistrationView, ProfileViewSet, BusinessListView
+
 
 router = DefaultRouter()
 router.register(r'profile', ProfileViewSet, basename="profile")
