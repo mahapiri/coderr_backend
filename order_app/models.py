@@ -4,6 +4,7 @@ from offer_app.models import Offer, OfferDetail
 from user_auth_app.models import Profile
 
 
+# Status choices for the Order model.
 STATUS_CHOICE = {
     "in_progress": "In Progress",
     "completed": "Completed",
@@ -11,6 +12,7 @@ STATUS_CHOICE = {
 }
 
 
+# Model representing an order between a customer and a business user.
 class Order(models.Model):
     customer_user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="orders_as_customer")
     business_user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="orders_as_business")
@@ -24,5 +26,6 @@ class Order(models.Model):
         verbose_name_plural = "Orders"
         ordering = ["customer_user"]
 
+    # Returns the username of the customer for display purposes.
     def __str__(self):
         return self.customer_user.user.username

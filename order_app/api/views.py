@@ -14,9 +14,11 @@ from order_app.models import STATUS_CHOICE, Order
 from user_auth_app.models import Profile
 
 
+# ViewSet for handling Order CRUD operations and permissions.
 class OrderViewSet(ModelViewSet):
     serializer_class = OrderSerializer
 
+    # Returns the queryset of orders for the current user or all orders for admins.
     def get_queryset(self):
         user = self.request.user
         try:
@@ -29,7 +31,7 @@ class OrderViewSet(ModelViewSet):
         except Exception:
             return Response({"details": "An Internal server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
+    # Returns the appropriate permissions depending on action.
     def get_permissions(self):
         if self.action == "destroy":
             permission_classes = [IsAuthenticated, IsAdminUser]
@@ -50,6 +52,7 @@ class OrderViewSet(ModelViewSet):
         tags=["Order"],
         responses={200: OrderSerializer(many=True)}
     )
+    # Returns a list of orders for the current user or all orders for admins.
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
@@ -68,6 +71,7 @@ class OrderViewSet(ModelViewSet):
             500: OpenApiResponse(description="Internal server error")
         }
     )
+    # Creates a new order for a customer user.
     def create(self, request, *args, **kwargs):
         user = request.user
         try:
@@ -106,6 +110,7 @@ class OrderViewSet(ModelViewSet):
             500: OpenApiResponse(description="Internal server error")
         }
     )
+    # Partially updates the status of an order (business user only).
     def partial_update(self, request, *args, **kwargs):
         user = request.user
         try:
@@ -138,6 +143,7 @@ class OrderViewSet(ModelViewSet):
             500: OpenApiResponse(description="Internal server error")
         }
     )
+    # Deletes an order (admin only).
     def destroy(self, request, *args, **kwargs):
         try:
             order = self.get_object()
@@ -149,6 +155,7 @@ class OrderViewSet(ModelViewSet):
             return Response({"details": "An Internal server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+# API view for retrieving count of in-progress orders for a business user.
 class OrderCountView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -173,6 +180,7 @@ class OrderCountView(APIView):
             500: OpenApiResponse(description="Internal server error")
         }
     )
+    # Returns the number of in-progress orders for a given business user profile.
     def get(self, request, business_user_id):
         try:
             profile = Profile.objects.get(pk=business_user_id, type="business")
@@ -185,6 +193,7 @@ class OrderCountView(APIView):
             return Response({"details": "An Internal server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+# API view for retrieving count of completed orders for a business user.
 class CompletedOrderView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -209,6 +218,7 @@ class CompletedOrderView(APIView):
             500: OpenApiResponse(description="Internal server error")
         }
     )
+    # Returns the number of completed orders for a given business user profile.
     def get(self, request, business_user_id):
         try:
             profile = Profile.objects.get(pk=business_user_id, type="business")

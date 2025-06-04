@@ -3,6 +3,7 @@ from django.db import models
 from user_auth_app.models import Profile
 
 
+# Represents an offer with user, title, image, and pricing info.
 class Offer(models.Model):
     user = models.ForeignKey(
         Profile, on_delete=models.CASCADE, related_name="offers")
@@ -24,6 +25,7 @@ class Offer(models.Model):
         return self.title
 
 
+# Stores features that can be linked to offers.
 class Feature(models.Model):
     title = models.CharField(max_length=255)
 
@@ -36,6 +38,7 @@ class Feature(models.Model):
         return self.title
 
 
+# Details for specific offers, including features and pricing.
 class OfferDetail(models.Model):
     offer = models.ForeignKey(
         Offer, on_delete=models.CASCADE, related_name="details")

@@ -4,6 +4,7 @@ from rest_framework.permissions import BasePermission
 from user_auth_app.models import Profile
 
 
+# Permission class that allows only users with a 'customer' profile type.
 class IsCustomerUser(BasePermission):
 
     def has_permission(self, request, view):
@@ -17,6 +18,7 @@ class IsCustomerUser(BasePermission):
             raise NotFound("Profile was not found!")
         
 
+# Permission class that allows only users with a 'business' profile type.
 class IsBusinessUser(BasePermission):
 
     def has_permission(self, request, view):

@@ -4,6 +4,7 @@ from offer_app.models import Offer, OfferDetail
 from user_auth_app.models import Profile
 
 
+# Serializes user profile with first name, last name, and username.
 class UserDetailSerializer(serializers.ModelSerializer):
     first_name = serializers.SerializerMethodField()
     last_name = serializers.SerializerMethodField()
@@ -23,6 +24,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
         return obj.user.username
 
 
+# Serializes offer detail with a custom URL field.
 class OfferDetailSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
 
@@ -34,6 +36,7 @@ class OfferDetailSerializer(serializers.ModelSerializer):
         return f"/offerdetails/{obj.id}/"
 
 
+# Serializes offers with nested details and user information.
 class OfferSerializer(serializers.ModelSerializer):
     details = OfferDetailSerializer(many=True, read_only=True)
     user_details = UserDetailSerializer(source="user", read_only=True)
@@ -46,6 +49,8 @@ class OfferSerializer(serializers.ModelSerializer):
             "min_price", "min_delivery_time", "user_details"
         ]
 
+
+# Serializes detailed offer info including feature titles.
 class OfferDetailResponseSerializer(serializers.ModelSerializer):
     features = serializers.SerializerMethodField()
 
@@ -59,6 +64,7 @@ class OfferDetailResponseSerializer(serializers.ModelSerializer):
         return [f.title for f in obj.features.all()]
     
 
+# Serializer for creating an offer, requiring details.
 class OfferCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offer
@@ -69,6 +75,8 @@ class OfferCreateSerializer(serializers.ModelSerializer):
             "details": {"required": True}
         }
 
+
+# Serializes offer with nested detailed responses.
 class OfferResponseSerializer(serializers.ModelSerializer):
     details = OfferDetailResponseSerializer(many=True, read_only=True)
 
@@ -78,6 +86,8 @@ class OfferResponseSerializer(serializers.ModelSerializer):
             "id", "title", "image", "description", "details"
         ]
 
+
+# Serializes offer detail with absolute URL for list endpoints.
 class OfferDetailListSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
 
@@ -91,6 +101,8 @@ class OfferDetailListSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(f"/api/offerdetails/{obj.id}/")
         return f"/api/offerdetails/{obj.id}/"
 
+
+# Serializes updated offer with nested details.
 class OfferUpdatedResponseSerializer(serializers.ModelSerializer):
     details = OfferDetailResponseSerializer(many=True, read_only=True)
 
@@ -100,6 +112,8 @@ class OfferUpdatedResponseSerializer(serializers.ModelSerializer):
             "id", "title", "image", "description", "details",
         )
 
+
+# Serializes offer for retrieval with details and user info.
 class OfferRetrieveSerializer(serializers.ModelSerializer):
     details = OfferDetailListSerializer(many=True, read_only=True)
     user = serializers.PrimaryKeyRelatedField(read_only=True)

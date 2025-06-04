@@ -12,12 +12,14 @@ from offer_app.api.permissions import IsBusinessPermission, IsOfferOwner
 from offer_app.api.serializers import OfferCreateSerializer, OfferDetailResponseSerializer, OfferResponseSerializer, OfferRetrieveSerializer, OfferSerializer, OfferUpdatedResponseSerializer
 
 
+# Exception for invalid or missing query parameters.
 class InvalidQueryParameter(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = "At least one valid request parameter must be passed."
     default_code = "invalid_query_parameter"
 
 
+# ViewSet for handling all Offer CRUD operations and filtering.
 class OfferViewSet(ModelViewSet):
     queryset = Offer.objects.all().select_related(
         "user").prefetch_related("details")
@@ -28,6 +30,7 @@ class OfferViewSet(ModelViewSet):
     ordering_fields = ["updated_at", "min_price"]
     ordering = ["updated_at"]
 
+    # Returns the serializer class based on the current action.
     def get_serializer_class(self):
         if self.action == "retrieve":
             return OfferRetrieveSerializer
@@ -36,7 +39,8 @@ class OfferViewSet(ModelViewSet):
         elif self.action == "create":
             return OfferCreateSerializer
         return OfferResponseSerializer
-
+    
+    # Returns the correct permission classes depending on action.
     def get_permissions(self):
         if self.action == "destroy":
             permission_classes = [IsAuthenticated, IsOfferOwner]
@@ -52,6 +56,7 @@ class OfferViewSet(ModelViewSet):
             permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]
 
+    # Gets and filters the queryset based on query parameters for listing.
     def get_queryset(self):
         queryset = super().get_queryset()
         params = self.request.query_params
@@ -69,6 +74,7 @@ class OfferViewSet(ModelViewSet):
             400: OpenApiResponse(description="At least one valid request parameter must be passed."),
         }
     )
+    # Returns a paginated list of all offers.
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
@@ -81,6 +87,7 @@ class OfferViewSet(ModelViewSet):
             404: OpenApiResponse(description="Offer not found."),
         }
     )
+    # Retrieves the details of a single offer by its ID.
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
@@ -95,6 +102,7 @@ class OfferViewSet(ModelViewSet):
             500: OpenApiResponse(description="Internal Server Error"),
         }
     )
+    # Creates a new offer with details. Only business profiles are allowed.
     def create(self, request, *args, **kwargs):
         data = request.data
         try:
@@ -120,6 +128,7 @@ class OfferViewSet(ModelViewSet):
             404: OpenApiResponse(description="Detail was not found."),
         }
     )
+    # Partially updates an offer and its details.
     def partial_update(self, request, *args, **kwargs):
         offer = self.get_object()
         data = request.data
@@ -147,6 +156,7 @@ class OfferViewSet(ModelViewSet):
             500: OpenApiResponse(description="Internal Server error occurred!"),
         }
     )
+    # Deletes an offer. Only the owner can delete.
     def destroy(self, request, *args, **kwargs):
         try:
             offer = self.get_object()
@@ -155,17 +165,20 @@ class OfferViewSet(ModelViewSet):
         except Exception:
             return Response({"details": "Internal Server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    # Updates the fields of an offer with provided data.
     def update_offer_fields(self, offer, data):
         for field, value in data.items():
             if value is not None:
                 setattr(offer, field, value)
         offer.save()
 
+    # Updates the details for an offer with validation.
     def update_offer_details(self, offer, details_data):
         for detail_update in details_data:
             self.validate_detail_update(detail_update)
             self.update_single_detail(offer, detail_update)
 
+    # Validates that all required fields are present in the detail update.
     def validate_detail_update(self, detail_update):
         required_fields = [
             "title", "revisions", "delivery_time_in_days", "price", "features", "offer_type"
@@ -179,6 +192,7 @@ class OfferViewSet(ModelViewSet):
         if extra:
             raise ValidationError("Invalid request data")
 
+    # Updates a single offer detail object with new values.
     def update_single_detail(self, offer, detail_update):
         offer_type = detail_update.get("offer_type")
         try:
@@ -191,12 +205,14 @@ class OfferViewSet(ModelViewSet):
         detail_obj.save()
         self.update_detail_features(detail_obj, detail_update.get("features"))
 
+    # Updates the features for a detail object.
     def update_detail_features(self, detail_obj, feature_titles):
         if feature_titles is not None:
             feature_objs = [Feature.objects.get_or_create(
                 title=title)[0] for title in feature_titles]
             detail_obj.features.set(feature_objs)
 
+    # Recalculates min price and delivery time for the offer.
     def update_offer_min_values(self, offer):
         all_details = offer.details.all()
         if all_details:
@@ -205,6 +221,7 @@ class OfferViewSet(ModelViewSet):
                 [d.delivery_time_in_days for d in all_details])
             offer.save()
 
+    # Filters queryset by URL parameters if present.
     def get_params_to_filter(self, params, queryset):
         creator_id = params.get("creator_id")
         min_price = params.get("min_price")
@@ -224,12 +241,14 @@ class OfferViewSet(ModelViewSet):
                 min_delivery_time__lte=max_delivery_time)
         return queryset
 
+    # Checks if the user profile is a valid business type.
     def is_valid_business_profile(self, request):
         profile = request.user.profiles.first()
         if not profile or profile.type != "business":
             raise PermissionDenied()
         return profile
 
+    # Creates a new offer and returns the offer and details.
     def create_offer(self, data, profile):
         details = data.get("details", [])
         if not isinstance(details, list) or len(details) != 3:
@@ -245,6 +264,7 @@ class OfferViewSet(ModelViewSet):
         )
         return offer, details
 
+    # Creates offer details and links features to them.
     def create_details_features(self, details, offer):
         for detail in details:
             features = detail.pop('features', [])
@@ -264,6 +284,7 @@ class OfferViewSet(ModelViewSet):
             offer_detail.features.set(feature_objs)
 
 
+# Read-only view for listing and retrieving offer details.
 class OfferDetailView(ReadOnlyModelViewSet):
     queryset = OfferDetail.objects.all()
     serializer_class = OfferDetailResponseSerializer
@@ -277,6 +298,7 @@ class OfferDetailView(ReadOnlyModelViewSet):
             200: OfferDetailResponseSerializer(many=True)
         }
     )
+    # Returns a list of all offer details.
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
@@ -289,5 +311,6 @@ class OfferDetailView(ReadOnlyModelViewSet):
             404: OpenApiResponse(description="Offer detail not found."),
         }
     )
+    # Retrieves the details of a single offer detail by its ID.
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)

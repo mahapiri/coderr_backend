@@ -11,16 +11,19 @@ from review_app.api.serializers import ReviewSerializer
 from review_app.api.permissions import IsReviewOwner
 
 
+# ViewSet for handling CRUD operations on reviews.
 class ReviewViewSet(ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
+    # Filters queryset based on query parameters.
     def get_queryset(self):
         queryset = super().get_queryset()
         params = self.request.query_params
         queryset = self.get_filter_params(queryset, params)
         return queryset
 
+    # Returns appropriate permissions for each action.
     def get_permissions(self):
         if self.action in ["partial_update", "update", "destroy"]:
             permission_classes = [IsAuthenticated, IsReviewOwner]
@@ -36,6 +39,7 @@ class ReviewViewSet(ModelViewSet):
             200: ReviewSerializer(many=True),
         }
     )
+    # Lists all reviews with optional filtering.
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
     
@@ -52,6 +56,7 @@ class ReviewViewSet(ModelViewSet):
             500: OpenApiResponse(description="An internal server error occurred!"),
         }
     )
+    # Creates a new review for a business user.
     def create(self, request, *args, **kwargs):
         data = request.data
         business_user_id = data.get("business_user")
@@ -87,6 +92,7 @@ class ReviewViewSet(ModelViewSet):
             500: OpenApiResponse(description="An internal server error occurred!"),
         }
     )
+    # Partially updates a review (only by the review owner).
     def partial_update(self, request, *args, **kwargs):
         review = self.get_object()
         rating = request.data.get("rating")
@@ -112,6 +118,7 @@ class ReviewViewSet(ModelViewSet):
             500: OpenApiResponse(description="An internal server error occurred!"),
         }
     )
+    # Deletes a review (only by the review owner).
     def destroy(self, request, *args, **kwargs):
         try:
             review = self.get_object()
@@ -119,7 +126,8 @@ class ReviewViewSet(ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception:
             return Response({"details": "An internal server error occurred!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+    
+    # Helper method to filter queryset with query parameters.
     def get_filter_params(self, queryset, params):
         business_user_id = params.get("business_user_id")
         reviewer_id = params.get("reviewer_id")
@@ -132,10 +140,12 @@ class ReviewViewSet(ModelViewSet):
             queryset = queryset.order_by(ordering)
         return queryset
 
+    # Validates data for review creation.
     def is_create_data_valid(self, business_user_id, description, rating):
         if business_user_id is None or description is None or rating is None:
             raise ValidationError()
 
+    # Checks if reviewer already exists for the given business user.
     def is_reviewer_already_exists(self, request, business_user_id):
         reviewer = request.user.profiles.filter(type="customer").first()
         if not reviewer:
@@ -146,6 +156,7 @@ class ReviewViewSet(ModelViewSet):
             raise PermissionDenied()
         return reviewer, business_user
 
+    # Validates data for review update.
     def is_patch_data_valid(self, rating, description):
         if rating is None or description is None:
             raise ValidationError()

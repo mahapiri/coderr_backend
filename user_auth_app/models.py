@@ -3,11 +3,14 @@ from django.db import models
 from django.utils import timezone
 
 
+# Choices for profile type: either business or customer.
 TYPE_CHOICES = (
     ("business", "Business"),
     ("customer", "Customer")
 )
 
+
+# Model representing a file related to a profile (e.g. profile image).
 class ProfileFile(models.Model):
     file = models.FileField(upload_to="profile-img/", max_length=255, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)

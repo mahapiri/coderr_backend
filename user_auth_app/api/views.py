@@ -16,6 +16,7 @@ from user_auth_app.api.serializers import BusinessSerializer, CustomerSerializer
 from user_auth_app.models import Profile
 
 
+# View for registering a new user and profile.
 class ProfilRegistrationView(generics.CreateAPIView):
     serializer_class = ProfilRegistrationSerializer
     permission_classes = [AllowAny]
@@ -46,10 +47,12 @@ class ProfilRegistrationView(generics.CreateAPIView):
         except Exception:
             return Response({"details": "An internal server error occurred!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    # Validates the serializer data.
     def validate_serializer(self, serializer):
         if not serializer.is_valid():
             raise ValidationError(serializer.errors)
 
+    # Creates a new User instance.
     def create_user(self, validated_data):
         try:
             created_user = User.objects.create_user(
@@ -61,6 +64,7 @@ class ProfilRegistrationView(generics.CreateAPIView):
         except Exception:
             raise Exception()
 
+    # Creates a new Profile instance associated with the user.
     def create_profile(self, user, validated_data):
         try:
             new_profile = Profile.objects.create(
@@ -72,6 +76,7 @@ class ProfilRegistrationView(generics.CreateAPIView):
             user.delete()
             raise Exception()
 
+    # Prepares the response data for registration.
     def create_response_data(self, token, profile, user):
         return {
             "token": token.key,
@@ -81,6 +86,7 @@ class ProfilRegistrationView(generics.CreateAPIView):
         }
 
 
+# View for authenticating a user and returning a token.
 class ProfilLoginView(generics.GenericAPIView):
 
     serializer_class = LoginSerializer
@@ -112,12 +118,14 @@ class ProfilLoginView(generics.GenericAPIView):
         except Exception as e:
             return Response({"details": f"An internal server error occurred!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    # Authenticates the user with provided credentials.
     def authenticate_user(self, serializer):
         return authenticate(
             username=serializer.validated_data["username"],
             password=serializer.validated_data["password"]
         )
 
+    # Prepares the response data for login.
     def create_response_data(self, token, profile, user):
         return {
             "token": token.key,
@@ -127,11 +135,13 @@ class ProfilLoginView(generics.GenericAPIView):
         }
 
 
+# ViewSet for CRUD operations on profiles.
 class ProfileViewSet(ModelViewSet):
     serializer_class = ProfileSerializer
     queryset = Profile.objects.all()
     permission_classes = [IsAuthenticated]
 
+    # Returns appropriate permissions for each action.
     def get_permissions(self):
         if self.action in ["update", "partial_update"]:
             permission_classes = [IsAuthenticated, ProfileOwnerPermissions]
@@ -139,6 +149,7 @@ class ProfileViewSet(ModelViewSet):
             permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]
 
+    # Retrieves a profile object, raising NotFound if not found.
     def get_object(self):
         try:
             obj = super().get_object()
@@ -186,6 +197,7 @@ class ProfileViewSet(ModelViewSet):
         except Exception:
             return Response({"details": "An Internal server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    # Updates user fields if present in the request data.
     def update_fields(self, request, user):
         data = request.data.copy()
         user_fields = ["first_name", "last_name", "email"]
@@ -199,6 +211,7 @@ class ProfileViewSet(ModelViewSet):
         return data
 
 
+# View for listing all business profiles.
 class BusinessListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = BusinessSerializer
@@ -222,6 +235,7 @@ class BusinessListView(generics.ListAPIView):
             return Response({"details": "Internal Server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+# View for listing all customer profiles.
 class CustomerListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = CustomerSerializer

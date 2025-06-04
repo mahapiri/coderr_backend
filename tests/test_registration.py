@@ -3,8 +3,10 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 
+# Test class for user registration functionality
 class TestRegistration(APITestCase):
 
+    # Test successful user registration
     def test_registration_success(self):
         url = reverse('registration')
         data = {
@@ -24,9 +26,9 @@ class TestRegistration(APITestCase):
         self.assertIn("user_id", response.data)
         self.assertIsInstance(response.data["user_id"], int)
 
+    # Test registration with invalid data (missing username)
     def test_registration_invalid_data(self):
         url = reverse('registration')
-        # username is missing
         data = {
             "username": "",
             "email": "example@mail.de",

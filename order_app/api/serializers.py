@@ -3,6 +3,7 @@ from rest_framework import serializers
 from order_app.models import Order
 
 
+# Serializer for Order model, including offer detail fields.
 class OrderSerializer(serializers.ModelSerializer):
     title = serializers.CharField(source="offer_detail.title", read_only=True)
     revisions = serializers.IntegerField(source="offer_detail.revisions", read_only=True)
@@ -31,9 +32,11 @@ class OrderSerializer(serializers.ModelSerializer):
         ]
 
 
+# Serializer for returning order count.
 class OrderCountSerializer(serializers.Serializer):
     order_count = serializers.IntegerField()
 
 
+# Serializer for returning completed order count.
 class CompletedOrderSerializer(serializers.Serializer):
     completed_order_count = serializers.IntegerField()

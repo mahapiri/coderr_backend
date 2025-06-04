@@ -4,6 +4,7 @@ from django.db import models
 from user_auth_app.models import Profile
 
 
+# Model representing a review given by a customer to a business user.
 class Review(models.Model):
     business_user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="reviewed_user")
     reviewer = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="reviewers")

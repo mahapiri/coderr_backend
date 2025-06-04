@@ -22,7 +22,8 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView
 
 from core.api.views import BaseInfoViewSet
 
-
+# URL patterns for the Django project.
+# Maps URL routes to their corresponding views or included URL configs.
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api-auth/", include("rest_framework.urls")),
