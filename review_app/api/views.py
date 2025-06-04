@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
+from order_app.api.permissions import IsCustomerUser
 from user_auth_app.models import Profile
 from review_app.models import Review
 from review_app.api.serializers import ReviewSerializer
@@ -27,6 +28,8 @@ class ReviewViewSet(ModelViewSet):
     def get_permissions(self):
         if self.action in ["partial_update", "update", "destroy"]:
             permission_classes = [IsAuthenticated, IsReviewOwner]
+        elif self.action == "create":
+            permission_classes = [IsAuthenticated, IsCustomerUser]
         else:
             permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]
@@ -60,8 +63,8 @@ class ReviewViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         data = request.data
         business_user_id = data.get("business_user")
-        description = data.get("description")
         rating = data.get("rating")
+        description = data.get("description")
         try:
             self.is_create_data_valid(business_user_id, description, rating)
             reviewer, business_user = self.is_reviewer_already_exists(
@@ -120,13 +123,10 @@ class ReviewViewSet(ModelViewSet):
     )
     # Deletes a review (only by the review owner).
     def destroy(self, request, *args, **kwargs):
-        try:
-            review = self.get_object()
-            self.perform_destroy(review)
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except Exception:
-            return Response({"details": "An internal server error occurred!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+        review = self.get_object()
+        self.perform_destroy(review)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     # Helper method to filter queryset with query parameters.
     def get_filter_params(self, queryset, params):
         business_user_id = params.get("business_user_id")

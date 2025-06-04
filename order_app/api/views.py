@@ -1,7 +1,7 @@
 from django.db import models
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import status
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -21,15 +21,12 @@ class OrderViewSet(ModelViewSet):
     # Returns the queryset of orders for the current user or all orders for admins.
     def get_queryset(self):
         user = self.request.user
-        try:
-            if user.is_staff:
-                return Order.objects.all()
-            profile = user.profiles.first()
-            return Order.objects.filter(
-                models.Q(customer_user=profile) | models.Q(business_user=profile)
-            ).distinct()
-        except Exception:
-            return Response({"details": "An Internal server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        if user.is_staff:
+            return Order.objects.all()
+        profile = user.profiles.first()
+        return Order.objects.filter(
+            models.Q(customer_user=profile) | models.Q(business_user=profile)
+        ).distinct()
 
     # Returns the appropriate permissions depending on action.
     def get_permissions(self):
@@ -112,10 +109,10 @@ class OrderViewSet(ModelViewSet):
     )
     # Partially updates the status of an order (business user only).
     def partial_update(self, request, *args, **kwargs):
+        order = self.get_object()
         user = request.user
         try:
             profile = Profile.objects.get(user=user)
-            order = self.get_object()
             if order.business_user != profile:
                 raise PermissionDenied()
             allowed_status = [key for key in STATUS_CHOICE.keys()]
@@ -126,12 +123,14 @@ class OrderViewSet(ModelViewSet):
             order.save()
             serializer = self.get_serializer(order)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        except Exception:
-            return Response({"details": "An Internal server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Profile.DoesNotExist:
+            return Response({"details": "Profile was not found."}, status=status.HTTP_401_UNAUTHORIZED)
         except PermissionDenied:
             return Response({"details": "You have no permission"}, status=status.HTTP_403_FORBIDDEN)
         except ValidationError:
             return Response({"details": "Invalid request data"}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception:
+            return Response({"details": f"An Internal server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @extend_schema(
         summary="Delete an order",

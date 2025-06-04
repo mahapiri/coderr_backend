@@ -24,6 +24,7 @@ class ProfileFile(models.Model):
         return self.file
 
 
+# Model representing a user profile, linked to a user and optionally to a file.
 class Profile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="profiles")
     created_at = models.DateTimeField(default=timezone.now)

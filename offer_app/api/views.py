@@ -151,12 +151,9 @@ class OfferViewSet(ModelViewSet):
     )
     # Deletes an offer. Only the owner can delete.
     def destroy(self, request, *args, **kwargs):
-        try:
-            offer = self.get_object()
-            self.perform_destroy(offer)
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except Exception:
-            return Response({"details": "Internal Server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        offer = self.get_object()
+        self.perform_destroy(offer)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     # Updates the fields of an offer with provided data.
     def update_offer_fields(self, offer, data):

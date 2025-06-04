@@ -50,7 +50,6 @@ class ProfileSerializer(serializers.ModelSerializer):
     last_name = serializers.SerializerMethodField()
     file = serializers.SerializerMethodField()
     email = serializers.SerializerMethodField()
-    created_at = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
@@ -99,15 +98,8 @@ class ProfileSerializer(serializers.ModelSerializer):
             return obj.user.email
         return None
 
-    # Format the created_at date.
-    def get_created_at(self, obj):
-        if obj.created_at:
-            formatted_date = obj.created_at.strftime("%Y-%m-%dT%H:%M:%S")
-            return formatted_date
-        return None
 
-
-# Serializer for business profiles, with selected fields.    
+# Serializer for business profiles, with selected fields.
 class BusinessSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
     first_name = serializers.SerializerMethodField()
@@ -153,7 +145,7 @@ class BusinessSerializer(serializers.ModelSerializer):
         if obj.file:
             return obj.file
         return None
-    
+
 
 # Serializer for customer profiles, with selected fields.
 class CustomerSerializer(serializers.ModelSerializer):
