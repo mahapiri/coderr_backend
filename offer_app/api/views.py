@@ -12,13 +12,6 @@ from offer_app.api.permissions import IsBusinessPermission, IsOfferOwner
 from offer_app.api.serializers import OfferCreateSerializer, OfferDetailResponseSerializer, OfferResponseSerializer, OfferRetrieveSerializer, OfferSerializer, OfferUpdatedResponseSerializer
 
 
-# Exception for invalid or missing query parameters.
-class InvalidQueryParameter(APIException):
-    status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = "At least one valid request parameter must be passed."
-    default_code = "invalid_query_parameter"
-
-
 # ViewSet for handling all Offer CRUD operations and filtering.
 class OfferViewSet(ModelViewSet):
     queryset = Offer.objects.all().select_related(
@@ -226,19 +219,19 @@ class OfferViewSet(ModelViewSet):
         creator_id = params.get("creator_id")
         min_price = params.get("min_price")
         max_delivery_time = params.get("max_delivery_time")
-        search = params.get("search")
-        ordering = params.get("ordering")
-
-        if not any([creator_id, min_price, max_delivery_time, search, ordering]):
-            raise InvalidQueryParameter()
 
         if creator_id:
             queryset = queryset.filter(user__id=creator_id)
         if min_price:
-            queryset = queryset.filter(min_price__gte=min_price)
+            try:
+                queryset = queryset.filter(min_price__gte=float(min_price))
+            except ValueError:
+                raise ValidationError({"min_price": "Must be a number"})
         if max_delivery_time:
-            queryset = queryset.filter(
-                min_delivery_time__lte=max_delivery_time)
+            try:
+                queryset = queryset.filter(min_delivery_time__lte=int(max_delivery_time))
+            except ValueError:
+                raise ValidationError({"max_delivery_time": "Must be an integer"})
         return queryset
 
     # Checks if the user profile is a valid business type.

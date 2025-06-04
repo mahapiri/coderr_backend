@@ -38,11 +38,11 @@ class BaseInfoViewSet(APIView):
     )
     def get(self, request, *args, **kwargs):
         try:
-            review_count = Review.objects.all().count()
+            review_count = Review.objects.count()
             average_rating_dict = Review.objects.aggregate(avg_rating=Avg("rating"))
-            average_rating = average_rating_dict["avg_rating"] or 0
+            average_rating = round(average_rating_dict["avg_rating"] or 0, 1)
             business_profile_count = Profile.objects.filter(type="business").count()
-            offer_count = Offer.objects.all().count()
+            offer_count = Offer.objects.count()
             serializer = BaseInfoSerializer({
                 "review_count": review_count,
                 "average_rating": average_rating,
