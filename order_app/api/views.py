@@ -1,7 +1,7 @@
 from django.db import models
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import status
-from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -144,14 +144,9 @@ class OrderViewSet(ModelViewSet):
     )
     # Deletes an order (admin only).
     def destroy(self, request, *args, **kwargs):
-        try:
-            order = self.get_object()
-            self.perform_destroy(order)
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except Order.DoesNotExist:
-            return Response({"details": "Order not found!"}, status=status.HTTP_404_NOT_FOUND)
-        except Exception:
-            return Response({"details": "An Internal server error occured!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        order = self.get_object()
+        self.perform_destroy(order)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 # API view for retrieving count of in-progress orders for a business user.
